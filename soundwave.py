@@ -1,59 +1,70 @@
-# imports
+from signal import signal
+import pyaudio
 import matplotlib.pyplot as plt
 import numpy as np
 import wave, sys
 
-# shows the sound waves
-def visualize(path: str):
+FRAMEBUFFER = 6400
+FORMAT = pyaudio.paInt32
+channels = 1 
+rate = 16000
 
-	# reading the audio file
-	raw = wave.open(path)
-	
-	# reads all the frames
-	# -1 indicates all or max frames
-	signal = raw.readframes(-1)
-	signal = np.frombuffer(signal, dtype ="int16")
-	
-	# gets the frame rate
-	f_rate = raw.getframerate()
 
-	# to Plot the x-axis in seconds
-	# you need get the frame rate
-	# and divide by size of your signal
-	# to create a Time Vector
-	# spaced linearly with the size
-	# of the audio file
-	time = np.linspace(
-		0, # start
-		len(signal) / f_rate,
-		num = len(signal)
-	)
 
-	# using matplotlib to plot
-	# creates a new figure
-	plt.figure(1)
-	
-	# title of the plot
-	plt.title("Sound Wave")
-	
-	# label of x-axis
+sound = pyaudio.PyAudio()
+stream = sound.open(format = FORMAT,  channels=channels, 
+rate=rate, input=True, frames_per_buffer=FRAMEBUFFER)
+
+
+print("begining recording")
+
+times = 5
+frame = []
+time_tracking = 0
+time_count = 0 
+
+audiofile =  wave.open('sound.wav', 'rb')
+
+test = audiofile.getframerate()
+frame = audiofile.getnframes()
+signal_wave = audiofile.readframes(-1)
+
+audiofile.close()
+
+num = frame / test
+
+signal = audiofile.readframes(-1)
+signal = np.frombuffer(signal, dtype= "int16")
+f_rate = audiofile.getframerate()
+
+audiofile = wave.open('sound.wav', 'wb')
+audiofile.setnchannels(channels)
+audiofile.setsampwidth(sound.get_sample_size(FORMAT))
+audiofile.writeframes(b''.join(frame))
+
+for i in range(0, int(rate/FRAMEBUFFER*times)):
+
+	time = np.linspace(0,len(signal)/ f_rate, num = len(signal))
+     
+	data = stream.read(FRAMEBUFFER)
+	frame.append(data)
+	time_count += 1
+
+	if time_tracking == rate/FRAMEBUFFER:
+		time_count += 1 
+		time_tracking = 0 
+
+		print(f'Time Left: {times - time_count} times')
+
+
+	plt.figure(figsize=(100, 400))
+
+	plt.title("sound Wave")
 	plt.xlabel("Time")
-	
-	# actual plotting
 	plt.plot(time, signal)
-	
-	# shows the plot
-	# in new window
 	plt.show()
 
-	# you can also save
-	# the plot using
-	# plt.savefig('filename')
 
+if __name__ == "_main_":
 
-if __name__ == "__main__":
-
-	# gets the command line Value
 	path = sys.argv[1]
-
-	visualize(path)
