@@ -25,14 +25,8 @@ time_count = 0
 
 audiofile =  wave.open('sound.wav', 'rb')
 
-test = audiofile.getframerate()
+
 frame = audiofile.getnframes()
-signal_wave = audiofile.readframes(-1)
-
-audiofile.close()
-
-num = frame / test
-
 signal = audiofile.readframes(-1)
 signal = np.frombuffer(signal, dtype= "int16")
 f_rate = audiofile.getframerate()
