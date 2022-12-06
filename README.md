@@ -1,3 +1,3 @@
 # Sound-Wave
 
-https://www.youtube.com/watch?v=LLocnOOb93Q
+https://youtu.be/LLocnOOb93Q
