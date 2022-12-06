@@ -1,64 +1,97 @@
-from signal import signal
+#Dec 5,2020
+#Final Project 
+#Description: This program will record sound and then plot it on a graph.
 import pyaudio
 import matplotlib.pyplot as plt
 import numpy as np
-import wave, sys
+import wave
 
+
+#this is the variables that will be used in the program
 FRAMEBUFFER = 6400
 FORMAT = pyaudio.paInt32
-channels = 1 
-rate = 16000
+CHANNELS = 1 
+RATE = 16000
 
 
-
+#this is the function that will record the sound
 sound = pyaudio.PyAudio()
-stream = sound.open(format = FORMAT,  channels=channels, 
-rate=rate, input=True, frames_per_buffer=FRAMEBUFFER)
+
+#this is the function that will record the sound
+streams = sound.open( 
+	format=FORMAT, channels=CHANNELS, rate=RATE, input=True,
+	frames_per_buffer=FRAMEBUFFER
+
+)
 
 
-print("begining recording")
-
-times = 5
-frame = []
-time_tracking = 0
-time_count = 0 
-
-audiofile =  wave.open('sound.wav', 'rb')
+print("beginning recording")
 
 
-frame = audiofile.getnframes()
-signal = audiofile.readframes(-1)
-signal = np.frombuffer(signal, dtype= "int16")
-f_rate = audiofile.getframerate()
+minutes = 2
+frames = []
+minutes_tracking = 0
+minutes_count = 0 
 
-audiofile = wave.open('sound.wav', 'wb')
-audiofile.setnchannels(channels)
-audiofile.setsampwidth(sound.get_sample_size(FORMAT))
-audiofile.writeframes(b''.join(frame))
+#this is the loop that will record the sound
+for i in range(0, int(RATE/FRAMEBUFFER*minutes)):
 
-for i in range(0, int(rate/FRAMEBUFFER*times)):
+	input = streams.read(FRAMEBUFFER)
 
-	time = np.linspace(0,len(signal)/ f_rate, num = len(signal))
-     
-	data = stream.read(FRAMEBUFFER)
-	frame.append(data)
-	time_count += 1
+	frames.append(input)
+	minutes_tracking += 1 
 
-	if time_tracking == rate/FRAMEBUFFER:
-		time_count += 1 
-		time_tracking = 0 
+	if minutes_tracking == RATE/FRAMEBUFFER:
 
-		print(f'Time Left: {times - time_count} times')
+		minutes_count += 1 
+
+		minutes_tracking = 0 
+
+		print(f'Time left:{minutes_count} minutes')
 
 
-	plt.figure(figsize=(100, 400))
+#this is the function that will stop the recording
+streams.stop_stream()
+streams.close()
+sound.terminate()
 
-	plt.title("sound Wave")
-	plt.xlabel("Time")
-	plt.plot(time, signal)
-	plt.show()
+#this is the function that will save the recording
+sham = wave.open('sound.wav', 'wb')
+sham.setnchannels(CHANNELS)
+sham.setsampwidth(sound.get_sample_size(FORMAT))
+sham.setframerate(RATE)
+sham.writeframes(b''.join(frames))
+sham.close()
+
+#this is the function that will plot the sound wave
+file = wave.open('sound.wav', 'rb')
+
+#this is the variables that will be used in the program
+test = file.getframerate()
+frames = file.getnframes()
+sound_wave = file.readframes(-1)
+
+#this is the function that will close the file
+file.close()
 
 
-if __name__ == "_main_":
+time = frames / test 
 
-	path = sys.argv[1]
+
+#this is the function that will plot the sound wave
+sound_array = np.frombuffer(sound_wave, dtype=np.int64)
+
+#this is the function that will plot the sound wave
+times = np.linspace(0, time, num=frames)
+
+
+#this is the function that will plot the sound wave
+plt.figure(figsize=(100, 400))
+plt.plot(times, sound_array)
+plt.ylabel("sound wave")
+plt.xlabel('Time (m)')
+plt.xlin(0, time)
+plt.title('what i am recoding!!')
+plt.show()
+
+
